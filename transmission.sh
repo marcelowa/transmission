@@ -72,19 +72,19 @@ for env in $(printenv | grep '^TR_'); do
     name=$(cut -c4- <<< ${env%%=*} | tr '_A-Z' '-a-z')
     val="\"${env##*=}\""
     [[ "$val" =~ ^\"([0-9]+|false|true)\"$ ]] && val=$(sed 's/"//g' <<<$val)
-    if grep -q $name $dir/info/settings.json; then
-        sed -i "/\"$name\"/s/:.*/: $val,/" $dir/info/settings.json
+    if grep -q $name $TRANSMISSION_DIR/info/settings.json; then
+        sed -i "/\"$name\"/s/:.*/: $val,/" $TRANSMISSION_DIR/info/settings.json
     else
-        sed -i 's/\([0-9"]\)$/\1,/' $dir/info/settings.json
-        sed -i "/^}/i\    \"$name\": $val" $dir/info/settings.json
+        sed -i 's/\([0-9"]\)$/\1,/' $TRANSMISSION_DIR/info/settings.json
+        sed -i "/^}/i\    \"$name\": $val" $TRANSMISSION_DIR/info/settings.json
     fi
 done
 
-[[ -d $dir/downloads ]] || mkdir -p $dir/downloads
-[[ -d $dir/incomplete ]] || mkdir -p $dir/incomplete
-[[ -d $dir/info/blocklists ]] || mkdir -p $dir/info/blocklists
+[[ -d $TRANSMISSION_DIR/downloads ]] || mkdir -p $TRANSMISSION_DIR/downloads
+[[ -d $TRANSMISSION_DIR/incomplete ]] || mkdir -p $TRANSMISSION_DIR/incomplete
+[[ -d $TRANSMISSION_DIR/info/blocklists ]] || mkdir -p $TRANSMISSION_DIR/info/blocklists
 
-chown -Rh debian-transmission. $dir 2>&1 | grep -iv 'Read-only' || :
+chown -Rh debian-transmission. $TRANSMISSION_DIR 2>&1 | grep -iv 'Read-only' || :
 
 if [[ $# -ge 1 && -x $(which $1 2>&-) ]]; then
     exec "$@"
@@ -97,12 +97,12 @@ else
     # Initialize blocklist
     url='http://list.iblocklist.com'
     curl -Ls "$url"'/?list=bt_level1&fileformat=p2p&archiveformat=gz' |
-                gzip -cd >$dir/info/blocklists/bt_level1
-    chown debian-transmission. $dir/info/blocklists/bt_level1
+                gzip -cd >$TRANSMISSION_DIR/info/blocklists/bt_level1
+    chown debian-transmission. $TRANSMISSION_DIR/info/blocklists/bt_level1
     exec su -l debian-transmission -s /bin/bash -c "exec transmission-daemon \
-                --config-dir $dir/info --blocklist --encryption-preferred \
+                --config-dir $TRANSMISSION_DIR/info --blocklist --encryption-preferred \
                 --dht --foreground --log-error -e /dev/stdout --no-portmap \
-                --download-dir $dir/downloads --incomplete-dir $dir/incomplete \
+                --download-dir $TRANSMISSION_DIR/downloads --incomplete-dir $TRANSMISSION_DIR/incomplete \
                 $([[ -z ${NOAUTH:-""} ]] && echo '--auth --username \
                 '"${TRUSER:-admin}"' --password '"${TRPASSWD:-admin}") \
                 --allowed \\* 2>&1"
