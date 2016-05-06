@@ -66,8 +66,8 @@ done
 shift $(( OPTIND - 1 ))
 
 [[ "${TZ:-""}" ]] && timezone "$TZ"
-[[ "${USERID:-""}" =~ ^[0-9]+$ ]] && usermod -u $USERID -o debian-transmission
-[[ "${GROUPID:-""}" =~ ^[0-9]+$ ]]&& groupmod -g $GROUPID -o debian-transmission
+[[ "${USER_ID:-""}" =~ ^[0-9]+$ ]] && usermod -u $USER_ID -o debian-transmission
+[[ "${GROUP_ID:-""}" =~ ^[0-9]+$ ]]&& groupmod -g $GROUP_ID -o debian-transmission
 for env in $(printenv | grep '^TR_'); do
     name=$(cut -c4- <<< ${env%%=*} | tr '_A-Z' '-a-z')
     val="\"${env##*=}\""
